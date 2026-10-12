@@ -1,0 +1,27 @@
+﻿@model IEnumerable<string>
+
+@{
+    ViewData["Title"] = "Tabelas do RadioDJ";
+}
+
+<h1>Tabelas do banco RadioDJ</h1>
+
+@if (!Model.Any())
+{
+    <p>Nenhuma tabela foi encontrada.</p>
+}
+else
+{
+    <p>Total de tabelas: @Model.Count()</p>
+
+    <ul>
+        @foreach (var tabela in Model)
+        {
+            <li>@tabela</li>
+        }
+    </ul>
+}
+
+<a asp-controller="Home" asp-action="Index">
+    Voltar à página inicial
+</a>
