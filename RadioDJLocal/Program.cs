@@ -11,10 +11,13 @@ builder.Services.AddScoped<IDbConnection>(_ =>
         builder.Configuration.GetConnectionString("RadioDJ")
     ));
 
-builder.Services.AddScoped<
-    RadioDJLocal.Data.RadioDjConnectionFactory>();
+builder.Services.AddScoped<RadioDJLocal.Data.RadioDjConnectionFactory>();
 
 builder.Services.AddScoped<RadioDJLocal.Data.RadioDjRepository>();
+builder.Services.AddScoped<RadioDJLocal.Data.GenreRepository>();
+builder.Services.AddScoped<RadioDJLocal.Data.SubcategoryRepository>();
+builder.Services.AddScoped<RadioDJLocal.Data.CategoryRepository>();
+builder.Services.AddScoped<RadioDJLocal.Data.SongRepository>();
 
 var app = builder.Build();
 
