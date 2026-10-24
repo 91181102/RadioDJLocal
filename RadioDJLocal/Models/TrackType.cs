@@ -65,6 +65,8 @@
             lista.Add(new TrackType(12, "Arquivo Por Data"));
             lista.Add(new TrackType(13, "Mais Recente da Pasta"));
             lista.Add(new TrackType(14, "Teaser"));
+
+            lista = lista.OrderBy(o => o.Name).ToList();
             return lista;
         }
     }
