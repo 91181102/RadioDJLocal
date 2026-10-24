@@ -12,6 +12,10 @@
         /// </summary>
         public int Id { get; set; }
         /// <summary>
+        /// Id da categoria na tabela Category.
+        /// </summary>
+        public int ParentId { get; set; }
+        /// <summary>
         /// Descrição do gênero.
         /// </summary>
         public string Name { get; set; }
@@ -23,6 +27,7 @@
         public Subcategory()
         {
             this.Id = 0;
+            this.ParentId = 0;
             this.Name = string.Empty;
         }
 

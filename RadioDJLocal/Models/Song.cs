@@ -1,4 +1,6 @@
-﻿namespace RadioDJLocal.Models
+﻿using System.Globalization;
+
+namespace RadioDJLocal.Models
 {
     public class Song
     {
@@ -150,7 +152,7 @@
         /// <summary>
         /// Define se vai obedecer à precisão do Cue_times.
         /// </summary>
-        public int Precise_Cue { get; set; }
+        public int Precise_cue { get; set; }
         /// <summary>
         /// Fade In.
         /// </summary>
@@ -211,7 +213,7 @@
             this.Weight = 50;
             this.Duration = 0;
             this.Cue_times = "&";
-            this.Precise_Cue = 0;
+            this.Precise_cue = 0;
             this.Fade_type = 0;
             this.End_type = 0;
             this.Overlay = 0;
@@ -239,45 +241,102 @@
         }
         #endregion
 
+        ///// <summary>
+        ///// Retorna a duração pelo parâmetro.
+        ///// </summary>
+        ///// <param name="cue_type"></param>
+        ///// <returns></returns>
+        //private double Get_cue_value(string cue_type)
+        //{
+        //    string staField = string.Empty;
+        //    string xtaField = string.Empty;
+        //    string endField = string.Empty;
+        //    string finField = string.Empty;
+        //    string fouField = string.Empty;
+
+        //    if (string.IsNullOrEmpty(this.Cue_times))
+        //        return 0;
+
+        //    if (this.Cue_times == "&")
+        //        return 0;
+
+        //    string[] times = this.Cue_times.Split('&');
+
+        //    if (times != null)
+        //    {
+        //        if (times.Length < 1)
+        //            return 0;
+
+        //        if (times.Length == 6)
+        //        {
+        //            staField = times[1].Replace("sta=", string.Empty);
+        //            xtaField = times[2].Replace("xta=", string.Empty);
+        //            endField = times[3].Replace("end=", string.Empty);
+        //            finField = times[4].Replace("fin=", string.Empty);
+        //            fouField = times[5].Replace("fou=", string.Empty);
+        //        }
+        //    }
+
+        //    if (cue_type == "sta") return Convert.ToDouble(staField);
+        //    if (cue_type == "xta") return Convert.ToDouble(xtaField);
+        //    if (cue_type == "end") return Convert.ToDouble(endField);
+        //    if (cue_type == "fin") return Convert.ToDouble(finField);
+        //    if (cue_type == "fou") return Convert.ToDouble(fouField);
+        //    return 0;
+        //}
+
+
         /// <summary>
-        /// Retorna a duração pelo parâmetro.
+        /// Retorna o valor de um parâmetro de Cue_times.
         /// </summary>
-        /// <param name="cue_type"></param>
-        /// <returns></returns>
         private double Get_cue_value(string cue_type)
         {
-            string staField = string.Empty;
-            string xtaField = string.Empty;
-            string endField = string.Empty;
-            string finField = string.Empty;
-            string fouField = string.Empty;
-
-            if (string.IsNullOrEmpty(this.Cue_times))
+            if (string.IsNullOrWhiteSpace(this.Cue_times))
                 return 0;
 
-            string[] times = this.Cue_times.Split('&');
+            string parametro = $"&{cue_type}=";
 
-            if (times != null)
+            foreach (string campo in this.Cue_times.Split('&'))
             {
-                if (times.Length < 1)
-                    return 0;
-
-                if (times.Length == 5)
+                if (campo.StartsWith($"{cue_type}=", StringComparison.OrdinalIgnoreCase))
                 {
-                    staField = times[0].Replace("sta=", string.Empty);
-                    xtaField = times[1].Replace("xta=", string.Empty);
-                    endField = times[2].Replace("end=", string.Empty);
-                    finField = times[3].Replace("fin=", string.Empty);
-                    fouField = times[4].Replace("fou=", string.Empty);
+                    string valor = campo.Substring(cue_type.Length + 1);
+
+                    if (double.TryParse(
+                        valor,
+                        NumberStyles.Float,
+                        CultureInfo.InvariantCulture,
+                        out double resultado))
+                    {
+                        return resultado;
+                    }
+
+                    return 0;
                 }
             }
 
-            if (cue_type == "sta") return Convert.ToDouble(staField);
-            if (cue_type == "xta") return Convert.ToDouble(xtaField);
-            if (cue_type == "end") return Convert.ToDouble(endField);
-            if (cue_type == "fin") return Convert.ToDouble(finField);
-            if (cue_type == "fou") return Convert.ToDouble(fouField);
             return 0;
+        }
+
+
+        /// <summary>
+        /// Retorna os códigos de sweppers.
+        /// </summary>
+        /// <returns></returns>
+        /// <![CDATA[19/10/2026]]>
+        public string GetSweepers()
+        {
+            var s = this.Sweepers.Split('&');
+            if (s.Length == 0)
+                return "0";
+            string cods = string.Join(",", s);
+            cods = "," + cods;
+            cods = cods.Replace(",,", "");
+
+            if (string.IsNullOrEmpty(cods))
+                return "0";
+
+            return cods;
         }
     }
 }
