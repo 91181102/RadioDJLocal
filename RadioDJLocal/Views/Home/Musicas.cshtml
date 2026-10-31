@@ -3,7 +3,7 @@
     @{
         ViewData["Title"] = "Músicas";
     }
-     <link rel="stylesheet" href="https://webradio1157.azurewebsites.net/Content/bootstrap.min.css" />
+     
     <h1 class="title-bar-text">Músicas</h1>
 
     <form asp-controller="Home" asp-action="PesquisarMusicas" method="get">
@@ -155,63 +155,295 @@
         </div>
     </form>
     <br>
-<div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Início</th>
-                <th>Final</th>
-                <th>Artista</th>
-                <th>Título</th>
-                <th>Álbum</th>
-                <th>Ano</th>
-                <th>Track</th>
-                <th>Gênero</th>
-                <th>Ativa</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var musica in Model)
-            {
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
                 <tr>
-                    <td>@musica.Id</td>
-                    <td>@musica.Start_date.ToString("dd/MM/yyyy")</td>
-                    <td>@musica.End_date.ToString("dd/MM/yyyy")</td>
-                    <td>@musica.Artist</td>
-                    <td>@musica.Title</td>
-                    <td>@musica.Album</td>
-                    <td>@musica.Year</td>
-                    <td>@musica.Track_no</td>
-                    <td>@musica.Genre</td>
-                    <td>@(musica.Enabled == 1 ? "Sim" : "Não")</td>
+                    <th>ID</th>
+                    <th>Início</th>
+                    <th>Final</th>
+                    <th>Artista</th>
+                    <th>Título</th>
+                    <th>Álbum</th>
+                    <th>Ano</th>
+                    <th>Track</th>
+                    <th>Gênero</th>
+                    <th>Ativa</th>
+                    <th>Ações</th>
                 </tr>
-            }
-        </tbody>
+            </thead>
+            <tbody>
+                @foreach (var musica in Model)
+                {
+                    <tr>
+                        <td>@musica.Id</td>
+                        <td>@musica.Start_date.ToString("dd/MM/yyyy")</td>
+                        <td>@musica.End_date.ToString("dd/MM/yyyy")</td>
+                        <td>@musica.Artist</td>
+                        <td>@musica.Title</td>
+                        <td>@musica.Album</td>
+                        <td>@musica.Year</td>
+                        <td>@musica.Track_no</td>
+                        <td>@musica.Genre</td>
+                        <td>@(musica.Enabled == 1 ? "Sim" : "Não")</td>
+                        <td>
+                            <button type="button"
+                                class="btn btn-sm btn-primary"
+                                onclick="editarMusica(@musica.Id)">
+                                Editar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
     </table>
+    
+</div>
+
+<div class="modal fade" id="modalEditarMusica" tabindex="-1"
+     aria-labelledby="modalEditarMusicaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarMusicaLabel">
+                    Editar música
+                </h5>
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <ul class="nav nav-tabs" id="abasEditarMusica" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="aba-configuracoes"
+                                data-bs-toggle="tab" data-bs-target="#conteudo-configuracoes"
+                                type="button" role="tab">
+                            Configurações
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="aba-detalhes"
+                                data-bs-toggle="tab" data-bs-target="#conteudo-detalhes"
+                                type="button" role="tab">
+                            Detalhes
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content pt-3">
+                    <div class="tab-pane fade show active" id="conteudo-configuracoes"
+                         role="tabpanel">
+
+                <div id="mensagemModal" class="alert alert-info d-none">
+                    Carregando dados...
+                </div>
+
+                <input type="hidden" id="editId" />
+
+                <div class="row g-3">
+
+                    <div class="col-md-8">
+                        <label for="editPath" class="form-label">Caminho do arquivo</label>
+                        <input type="text" class="form-control" id="editPath" readonly />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="editSongType" class="form-label">Tipo de faixa</label>
+                        <select class="form-select" id="editSongType">
+                            @foreach (var tipo in ViewBag.TiposFaixa)
+                            {
+                                <option value="@tipo.Id">@tipo.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="editMainCategory" class="form-label">Categoria</label>
+                        <select class="form-select" id="editMainCategory">
+                            @foreach (var categoria in ViewBag.Categorias)
+                            {
+                                <option value="@categoria.Id">@categoria.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="editSubcategory" class="form-label">Subcategoria</label>
+                        <select class="form-select" id="editSubcategory">
+                            @foreach (var subcategoria in ViewBag.Subcategorias)
+                            {
+                                <option value="@subcategoria.Id"
+                                        data-parent-id="@subcategoria.ParentId">
+                                    @subcategoria.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="editGenre" class="form-label">Gênero</label>
+                        <select class="form-select" id="editGenre">
+                            @foreach (var genero in ViewBag.Generos)
+                            {
+                                <option value="@genero.Id">@genero.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="editWeight" class="form-label">Peso</label>
+                        <input type="number" class="form-control"
+                               id="editWeight" step="0.01" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="editStartDate" class="form-label">Data inicial</label>
+                        <input type="date" class="form-control" id="editStartDate" />
+                        <div class="form-check mt-1">
+                            <input class="form-check-input" type="checkbox"
+                                   id="editStartDateEnabled" />
+                            <label class="form-check-label" for="editStartDateEnabled">
+                                Ativar data inicial
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="editEndDate" class="form-label">Data final</label>
+                        <input type="date" class="form-control" id="editEndDate" />
+                        <div class="form-check mt-1">
+                            <input class="form-check-input" type="checkbox"
+                                   id="editEndDateEnabled" />
+                            <label class="form-check-label" for="editEndDateEnabled">
+                                Ativar data final
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="editPlayLimit" class="form-label">Limite de execução</label>
+                        <input type="number" class="form-control" id="editPlayLimit" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="editEnabled" />
+                            <label class="form-check-label" for="editEnabled">Música ativa</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox"
+                                   id="editPreciseCue" />
+                            <label class="form-check-label" for="editPreciseCue">
+                                Cue preciso
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="editOverlay" />
+                            <label class="form-check-label" for="editOverlay">Overlay</label>
+                        </div>
+                    </div>
+
+                </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="conteudo-detalhes" role="tabpanel">
+                        <div class="row g-3">
+
+                            <div class="col-md-8">
+                                <label for="editArtist" class="form-label">Artista</label>
+                                <input type="text" class="form-control" id="editArtist" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editYear" class="form-label">Ano</label>
+                                <input type="text" class="form-control" id="editYear" />
+                            </div>
+
+                            <div class="col-md-8">
+                                <label for="editTitle" class="form-label">Título</label>
+                                <input type="text" class="form-control" id="editTitle" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editAlbum" class="form-label">Álbum</label>
+                                <input type="text" class="form-control" id="editAlbum" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editComposer" class="form-label">Compositor</label>
+                                <input type="text" class="form-control" id="editComposer" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editOriginalArtist" class="form-label">Artista original</label>
+                                <input type="text" class="form-control" id="editOriginalArtist" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editPublisher" class="form-label">Gravadora / Publisher</label>
+                                <input type="text" class="form-control" id="editPublisher" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editCopyright" class="form-label">Copyright</label>
+                                <input type="text" class="form-control" id="editCopyright" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editBuyLink" class="form-label">Link de compra</label>
+                                <input type="text" class="form-control" id="editBuyLink" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editAlbumArt" class="form-label">Capa do álbum</label>
+                                <input type="text" class="form-control" id="editAlbumArt" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editBpm" class="form-label">BPM</label>
+                                <input type="number" class="form-control" id="editBpm" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editDiscNo" class="form-label">Número do disco</label>
+                                <input type="number" class="form-control" id="editDiscNo" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editTrackNo" class="form-label">Número da faixa</label>
+                                <input type="number" class="form-control" id="editTrackNo" />
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
     <div class="status-field-border" style="padding: 8px">
         Total exibido: @Model.Count()
     </div>
 
-    <script>
-        document.querySelectorAll('table.interactive').forEach(element => {
-            element.addEventListener('click', (event) => {
-                const highlightedClass = 'highlighted';
-                const isRow = element => element.tagName === 'TR' && element.parentElement.tagName === 'TBODY';
-                const newlySelectedRow = event.composedPath().find(isRow);
-                const previouslySelectedRow = Array.from(newlySelectedRow.parentElement.children).filter(isRow).find(element => element.classList.contains(highlightedClass));
-                if (previouslySelectedRow) {
-                    previouslySelectedRow.classList.toggle(highlightedClass);
-                }
+    
 
-                if (newlySelectedRow) {
-                    newlySelectedRow.classList.toggle(highlightedClass);
-                }
-            })
-        });
-    </script>
+
+    
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -278,4 +510,90 @@
                 campo.focus();
             }
         }
+
+        // function editarMusica(id) {
+        //     console.log("Editar música ID:", id);
+        // }
+
+
+    async function editarMusica(id) {
+        const modalElement = document.getElementById("modalEditarMusica");
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        const mensagem = document.getElementById("mensagemModal");
+
+        mensagem.textContent = "Carregando dados...";
+        mensagem.classList.remove("d-none", "alert-danger");
+        mensagem.classList.add("alert-info");
+
+        modal.show();
+
+        try {
+            const resposta = await fetch(`/Home/BuscarMusica?id=${id}`);
+
+            if (!resposta.ok) {
+                throw new Error(`Erro ao buscar música: ${resposta.status}`);
+            }
+
+            const musica = await resposta.json();
+
+            // document.getElementById("editId").value = musica.id;
+            // document.getElementById("editArtist").value = musica.artist ?? "";
+            // document.getElementById("editYear").value = musica.year ?? "";
+            // document.getElementById("editTitle").value = musica.title ?? "";
+            // document.getElementById("editAlbum").value = musica.album ?? "";
+            // document.getElementById("editGenre").value = musica.genre ?? "";
+            // document.getElementById("editCategory").value = musica.category ?? "";
+                document.getElementById("editId").value = musica.id;
+    
+                document.getElementById("editPath").value = musica.path ?? "";
+                document.getElementById("editSongType").value = musica.song_type ?? 0;
+                document.getElementById("editMainCategory").value = musica.id_category ?? "";
+                filtrarSubcategorias(musica.id_category);
+                document.getElementById("editSubcategory").value = musica.id_subcat ?? "";
+                document.getElementById("editGenre").value = musica.id_genre ?? "";
+                document.getElementById("editWeight").value = musica.weight ?? 0;
+                document.getElementById("editPlayLimit").value = musica.play_limit ?? "";
+                document.getElementById("editEnabled").checked = musica.enabled == 1;
+                document.getElementById("editPreciseCue").checked = musica.precise_Cue == 1;
+                document.getElementById("editOverlay").checked = musica.overlay == 1;
+                document.getElementById("editStartDate").value = musica.start_date?.substring(0, 10) ?? "";
+                document.getElementById("editEndDate").value = musica.end_date?.substring(0, 10) ?? "";
+                document.getElementById("editStartDateEnabled").checked = (musica.start_date?.substring(0, 10) ?? "") > "2002-01-02";
+                document.getElementById("editEndDateEnabled").checked = (musica.end_date?.substring(0, 10) ?? "") > "2002-01-02";                    
+                // Aba Detalhes                
+                document.getElementById("editArtist").value = musica.artist ?? "";
+                document.getElementById("editTitle").value = musica.title ?? "";
+                document.getElementById("editAlbum").value = musica.album ?? "";
+                document.getElementById("editYear").value = musica.year ?? "";
+                document.getElementById("editComposer").value = musica.composer ?? "";
+                document.getElementById("editOriginalArtist").value = musica.original_artist ?? "";
+                document.getElementById("editPublisher").value = musica.publisher ?? "";
+                document.getElementById("editCopyright").value = musica.copyright ?? "";
+                document.getElementById("editBuyLink").value = musica.buy_link ?? "";
+                document.getElementById("editAlbumArt").value = musica.album_art ?? "";
+                document.getElementById("editBpm").value = musica.bpm ?? "";
+                document.getElementById("editDiscNo").value = musica.disc_no ?? "";
+                document.getElementById("editTrackNo").value = musica.track_no ?? "";
+                //
+                mensagem.classList.add("d-none");
+            } catch (erro) {
+            mensagem.textContent = "Não foi possível carregar os dados da música.";
+            mensagem.classList.remove("d-none", "alert-info");
+            mensagem.classList.add("alert-danger");
+
+            console.error(erro);
+        }
+    }
+
+    function filtrarSubcategorias(idCategoria) {
+        const select = document.getElementById("editSubcategory");
+        Array.from(select.options).forEach(opcao => {
+            opcao.hidden = opcao.dataset.parentId != idCategoria;
+        });
+    }
+        
+    document.getElementById("editMainCategory").addEventListener("change", function () {
+            filtrarSubcategorias(this.value);
+            document.getElementById("editSubcategory").value = "";    
+    });
     </script>

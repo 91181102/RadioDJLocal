@@ -198,9 +198,56 @@ public class SongRepository
         await conexao.OpenAsync();
 
         const string sql = """
-        SELECT *
-        FROM songs
-        WHERE id = @Id
+        SELECT
+            S.id,
+            S.title,
+            S.artist,
+            S.album,
+            S.year,
+            S.album_art,
+            S.song_type,
+            S.path,
+            S.enabled,
+            S.date_played,
+            S.artist_played,
+            S.cue_times,
+            S.duration,
+            S.id_genre,
+            COALESCE(G.name, '') AS genre,
+            S.id_subcat,
+            COALESCE(T.name, '') AS category,
+            COALESCE(T.parentId, 0) AS id_category,
+            S.composer,
+            S.copyright,
+            S.buy_link,
+            S.disc_no,
+            S.original_artist,
+            S.publisher,
+            S.track_no,
+            S.count_played,
+            S.play_limit,
+            S.limit_action,
+            S.start_date,
+            S.end_date,
+            S.weight,
+            S.precise_cue,
+            S.fade_type,
+            S.end_type,
+            S.overlay,
+            S.isrc,
+            S.bpm,
+            S.comments,
+            S.sweepers,
+            S.tdate_played,
+            S.tArtist_played
+        FROM songs S
+        LEFT JOIN genre G
+            ON G.id = S.id_genre
+        LEFT JOIN subcategory T
+            ON T.id = S.id_subcat
+        LEFT JOIN category C
+            ON C.id = T.parentId
+        WHERE S.id = @Id
         LIMIT 1;
         """;
 
@@ -209,4 +256,65 @@ public class SongRepository
             new { Id = id });
     }
 
+    /// <summary>
+    /// Lista o histórico de execuções da faixa.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <![CDATA[31/10/2026]]>
+    public async Task<IEnumerable<PlayedDate>> ListarExecucoesAsync(int id)
+    {
+        const string sql = @"
+        SELECT
+            H.ID,
+            H.date_played,
+            H.track_no,
+            H.listeners
+        FROM history H
+        WHERE H.trackID = @Id
+        ORDER BY H.ID DESC;";
+
+        await using var conexao = _factory.CreateConnection();
+        await conexao.OpenAsync();
+
+        return await conexao.QueryAsync<PlayedDate>(sql, new { Id = id });
+    }
+
+    /// <summary>
+    /// Lista as faixas de locução associadas a música.
+    /// </summary>
+    /// <param name="codigos"></param>
+    /// <returns></returns>
+    /// <![CDATA[31/10/2026]]>
+    public async Task<IEnumerable<Sweeper>> ListarSweepersAsync(string? codigos)
+    {
+        if (string.IsNullOrWhiteSpace(codigos))
+            return Enumerable.Empty<Sweeper>();
+
+        var ids = codigos
+            .Split('&', StringSplitOptions.RemoveEmptyEntries |
+                        StringSplitOptions.TrimEntries)
+            .Select(codigo => int.TryParse(codigo, out int id) ? id : 0)
+            .Where(id => id > 0)
+            .Distinct()
+            .ToArray();
+
+        if (ids.Length == 0)
+            return Enumerable.Empty<Sweeper>();
+
+        const string sql = @"
+        SELECT
+            S.id,
+            S.title,
+            S.artist,
+            S.duration,
+            S.album
+        FROM songs S
+        WHERE S.id IN @Ids;";
+
+        await using var conexao = _factory.CreateConnection();
+        await conexao.OpenAsync();
+
+        return await conexao.QueryAsync<Sweeper>(sql, new { Ids = ids });
+    }
 }

@@ -132,6 +132,40 @@ namespace RadioDJLocal.Controllers
             return Json(musica);
         }
 
+        /// <summary>
+        /// Retorna a tabela do histórico de execuções da faixa.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <![CDATA[31/10/2026]]>
+        [HttpGet]
+        public async Task<IActionResult> BuscarExecucoes(int id)
+        {
+            var execucoes = await _songRepository.ListarExecucoesAsync(id);
+
+            return Json(execucoes);
+        }
+
+        /// <summary>
+        /// Retorna a tabela de sweepers.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <![CDATA[31/10/2026]]>
+        [HttpGet]
+        public async Task<IActionResult> BuscarSweepers(int id)
+        {
+            var musica = await _songRepository.BuscarPorIdAsync(id);
+
+            if (musica == null)
+                return NotFound();
+
+            var sweepers = await _songRepository.ListarSweepersAsync(musica.Sweepers);
+
+            return Json(sweepers);
+        }
+
+
         public IActionResult Index()
         {
             return View();
